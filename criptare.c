@@ -3,7 +3,7 @@
 typedef struct
 {
     unsigned char r, g, b;
-}pixels;
+}pixel;
 
 void obtinere_latime_inaltime_img(FILE * f, int *latime, int *inaltime)
 {
