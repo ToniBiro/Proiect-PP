@@ -1,0 +1,3 @@
+peppers.bmp
+imagine_criptata.bmp
+cheie.txt

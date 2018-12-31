@@ -1,17 +1,8 @@
+#include <stdio.h>
+#include <stdlib.h>
 #include "criptare.h"
+#include "test_chi_patrat.h"
 
-typedef struct
-{
-    unsigned char r, g, b;
-}pixel;
-
-void obtinere_latime_inaltime_img(FILE * f, int *latime, int *inaltime)
-{
-    fseek(f, 18, SEEK_SET);
-    fread(latime, sizeof(int), 1, f);
-    fseek(f, 22, SEEK_SET);
-    fread(inaltime, sizeof(int), 1, f);
-}
 
 pixel XOR_doi_pixeli(pixel a, pixel b)
 {
@@ -36,6 +27,7 @@ pixel XOR_pixel_si_intreg(pixel a, int b)
     return rez;
 }
 
+//functie genereaza si returneaza un numar aleator in functie de seed-ul transmis ca parametru
 unsigned int XORSHIFT32(unsigned int seed)
 {
     seed = seed ^ seed << 13;
@@ -45,6 +37,7 @@ unsigned int XORSHIFT32(unsigned int seed)
     return seed;
 }
 
+//functia genereaza si returneaza un sir pseudo-aleator de lungime 2*latime*inaltime imagine, sir utilizat in criptarea imaginii
 unsigned int* generare_sir_nr_pseudo_aleatoare(unsigned int seed, int n)
 {
     unsigned int *r = (unsigned int*)malloc(sizeof(unsigned int) * 2 * n);
@@ -60,7 +53,8 @@ unsigned int* generare_sir_nr_pseudo_aleatoare(unsigned int seed, int n)
     return r;
 }
 
-void permutare(int n, int *v, unsigned int * r)
+//functia creaza o permutare de n elemente cu ajutorul sirului pseudo-aleator r
+void permutare(int n, int *v, unsigned int *r)
 {
     unsigned int i, j;
     for(i = 1; i < n; ++i)
@@ -72,45 +66,50 @@ void permutare(int n, int *v, unsigned int * r)
     }
 }
 
-pixel* permutare_imagine(pixel *p, int latime, int inaltime, unsigned int * r)
+//functia primeste ca parametru o imagine si ii permuta pixelii
+void permutare_imagine(imagine *a, unsigned int * r)
 {
-    int n = latime * inaltime;
+    int n = a->latime * a->inaltime;
     int i;
-
     int *v = (int*)malloc(sizeof(int)*n);
-
     for(i = 0; i < n; ++i)
         v[i] = i;
 
     //permutarea cu ajutorul sirului pseudo-aleator
     permutare(n, v, r);
 
-    //aloc dinamic spatiu pt vectorul cu pizxeli permutat
+    //aloc dinamic spatiu pt vectorul cu pixeli permutati
     pixel *rez = (pixel*)malloc(sizeof(pixel)*n);
 
     //permutarea imaginii
     for(i = 0; i < n; ++i)
-        rez[v[i]] = p[i];
+        rez[v[i]] = a->p[i];
 
-    return rez;
+    free(a->p);
+    a->p = rez;
 }
 
-pixel* criptare_cu_XOR(pixel *img_permutata, int n, unsigned int *sir, unsigned int sv)
+//functia primeste o imagine cu pixelii permutati si aplica asupra fiecarui pixel criptarea cu xor
+//este folosita a doua jumatate a sirului pseudo-aleator r
+void criptare_cu_XOR(imagine *a, unsigned int *r, unsigned int sv)
 {
-    // n este lungimea imaginii (latimea * inaltimea)
+    int n = a->latime * a->inaltime;
 
     pixel *c = (pixel*)malloc(sizeof(pixel) * n);
 
-    c[0] = XOR_pixel_si_intreg(XOR_pixel_si_intreg(img_permutata[0], sv), sir[n]);
+    c[0] = XOR_pixel_si_intreg(XOR_pixel_si_intreg(a->p[0], sv), r[n]);
 
     int i;
     for(i = 1; i < n; ++i)
-        c[i] = XOR_pixel_si_intreg(XOR_doi_pixeli(c[i-1], img_permutata[i]), sir[n+i]);
+        c[i] = XOR_pixel_si_intreg(XOR_doi_pixeli(c[i-1], a->p[i]), r[n+i]);
 
-    return c;
+    free(a->p);
+    a->p = c;
 }
 
-pixel* liniarizare(char* nume_fisier)
+//functia primeste un nume de fisier cu o imagine bmp, aloca dinamic spatiu pentru o imagine
+//o liniarizeaza si returneaza adresa la care a fost memorata
+imagine* liniarizare(char* nume_fisier)
 {
     FILE *f = fopen(nume_fisier, "rb");
     if(f == NULL)
@@ -119,121 +118,141 @@ pixel* liniarizare(char* nume_fisier)
         return NULL;
     }
 
-    //obtin latimea si inaltimea imaginii in pixeli
-    int latime, inaltime;
-    obtinere_latime_inaltime_img(f, &latime, &inaltime);
-    printf("--latime: %d\n--inaltime: %d\n", latime, inaltime);
+    imagine *a = (imagine*) malloc(sizeof(imagine));
 
-    //padding
+    //obtin latimea si inaltimea imaginii in pixeli
+
+    fseek(f, 18, SEEK_SET);
+    fread(&a->latime, sizeof(int), 1, f);
+    fseek(f, 22, SEEK_SET);
+    fread(&a->inaltime, sizeof(int), 1, f);
+    printf("--latime img de liniarizat: %d\n--inaltime img de liniarizat: %d\n", a->latime, a->inaltime);
+
+    //se calculeaza padding-ul
     int padding;
-    if(latime%4  != 0)
-        padding = 4 - (3 * latime)%4;
+    if(a->latime%4  != 0)
+        padding = 4 - (3 * a->latime)%4;
     else
         padding = 0;
 
-    //liniarizez imaginea
-
+    //liniarizarea imaginii
     fseek(f, 54, SEEK_SET);
     int i, j, k;
     char t;
-    pixel *p = (pixel*)malloc(latime*inaltime*sizeof(pixel));
+    a->p = (pixel*)malloc(a->latime*a->inaltime*sizeof(pixel));
     int h = 0;
-    for( i = 0; i < inaltime; ++i)
+    for( i = 0; i < a->inaltime; ++i)
     {
-        for(j = 0; j < latime; ++j)
+        for(j = 0; j < a->latime; ++j)
         {
-            fread(&p[h].b, 1, 1, f);
-            fread(&p[h].g, 1, 1, f);
-            fread(&p[h++].r, 1, 1, f);
+            fread(&a->p[h].b, 1, 1, f);
+            fread(&a->p[h].g, 1, 1, f);
+            fread(&a->p[h++].r, 1, 1, f);
         }
         for(k = 0; k < padding; ++k)
             fread(&t, 1, 1, f);
     }
     int lungime = ftell(f);
-    printf("\nlungime: %d\n", lungime);
+    printf("\nlungime img de liniarizat: %d\n", lungime);
 
     fclose(f);
-    return p;
+    return a;
 }
 
-pixel* criptare(pixel *p, unsigned char *imagine)
-{
-    FILE *f = fopen(imagine, "rb");
-
-    int latime, inaltime;
-    obtinere_latime_inaltime_img(f, &latime, &inaltime);
-
-    fclose(f);
-
-    //generez sir de nr psedo-aleatoare
-
-    unsigned int * r;
-    r = generare_sir_nr_pseudo_aleatoare(123456789, latime * inaltime);
-
-    //permut imaginea cu ajutorul primei jumatati a sirului pseudo-aleator
-
-    pixel *img_permutata = permutare_imagine(p, latime, inaltime, r);
-
-    //criptez cu xor folosind a doua jumatate a sirului pseudo-aleator
-
-    int sv = 987654321;
-    pixel *c;
-    c = criptare_cu_XOR(img_permutata, latime*inaltime, r, sv);
-
-    return c;
-}
-
-void rescrie(char* fis_init, char *nume_rez, pixel *p)
+//functia rescrie imaginea criptata liniarizata la o forma neliniarizata
+//este nevoie de fisierul initial pentru a copia header-ul
+void rescrie(char* fisier_init, char* fisier_fin, imagine *a)
 {
     //deschidere fisiere
-    FILE *f = fopen(fis_init, "rb");
-    FILE *fout = fopen(nume_rez, "wb");
+    FILE *fin = fopen(fisier_init, "rb");
+    FILE *fout = fopen(fisier_fin, "wb");
 
-    if(f == NULL)
+    if(fin == NULL)
     {
         printf("Eroare deschidere");
         return;
     }
-    fseek(f, 0L, SEEK_SET);
 
-    //latime si inaltime
-    int latime, inaltime;
-    obtinere_latime_inaltime_img(f, &latime, &inaltime);
-    printf("--latime: %d\n--inaltime: %d\n", latime, inaltime);
-
-    //aflare padding
+    //se calculeaza padding-ul
     int padding;
-    if(latime%4  != 0)
-        padding = 4 - (3 * latime)%4;
+    if(a->latime%4  != 0)
+        padding = 4 - (3 * a->latime)%4;
     else
         padding = 0;
-    fseek(f, 0L, SEEK_SET);
+
+    fseek(fin, 0L, SEEK_SET);
     //copiere header
     int i;
     for(i = 0; i < 54; ++i)
     {
         char x;
-        fread(&x, 1, 1, f);
+        fread(&x, 1, 1, fin);
         fwrite(&x, 1, 1, fout);
     }
 
     //refacere imagine
-    int j, k, l = 0, h = 0;
-    for(i = 0; i < inaltime; ++i)
+    int j, k, t = 0, h = 0;
+    for(i = 0; i < a->inaltime; ++i)
     {
-        for(j = 0; j < latime; ++j)
+        for(j = 0; j < a->latime; ++j)
         {
-            fwrite(&p[h].b, 1, 1, fout);
-            fwrite(&p[h].g, 1, 1, fout);
-            fwrite(&p[h++].r, 1, 1, fout);
+            fwrite(&a->p[h].b, 1, 1, fout);
+            fwrite(&a->p[h].g, 1, 1, fout);
+            fwrite(&a->p[h++].r, 1, 1, fout);
         }
         for(k = 0; k < padding; ++k)
-            fwrite(&l, 1, 1, fout);
+            fwrite(&t, 1, 1, fout);
     }
 
     int lungime = ftell(fout);
     printf("\n lungime:%d\n", lungime);
 
-    fclose(f);
+    fclose(fin);
     fclose(fout);
+}
+
+//functia liniarizeaza imaginea primita in fisierul imagine_init
+//modifica vectorul de pixeli obtinut si rescrie imaginea criptata in fisierul imagine_fin
+//in fisierul cheie returneaza seed-ul si sv-ul
+void criptare(char *imagine_init, char *imagine_fin, char *cheie)
+{
+    //liniarizare imagine
+    if(strstr(imagine_init, ".bmp") == NULL)
+    {
+        printf("Nu este un fisier de tip bmp.");
+        return NULL;
+    }
+
+    imagine *a = liniarizare(imagine_init);
+
+    //modificare vector de pixeli
+    //se genereaza sir de nr psedo-aleatoare
+
+    unsigned int * r;
+    unsigned int seed = 123456789;
+    r = generare_sir_nr_pseudo_aleatoare(seed, a->latime * a->inaltime);
+
+    //permut imaginea cu ajutorul primei jumatati a sirului pseudo-aleator
+
+    permutare_imagine(a, r);
+
+    //criptez cu xor folosind a doua jumatate a sirului pseudo-aleator
+
+    int sv = 987654321;
+    criptare_cu_XOR(a, r, sv);
+
+    //rescriere a imaginii
+    rescrie(imagine_init, imagine_fin, a);
+
+    test_chi_patrat(imagine_fin, a);
+
+    free(a->p);
+    free(a);
+
+    FILE *f = fopen(cheie, "w");
+
+    fprintf(f, "%u %u", seed, sv);
+
+    fclose(f);
+
 }
