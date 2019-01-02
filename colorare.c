@@ -25,7 +25,7 @@ void colorez(imagine *a, vect_detectii f)
     int i;
     for(i = 0; i < f.lng; ++i)
     {
-        if(f.d[i].scor != -1)
+        if(f.d[i].scor != -2)
             color_fereastra(a, f.d[i], f.d[i].c);
     }
 

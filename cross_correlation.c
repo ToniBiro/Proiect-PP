@@ -1,7 +1,6 @@
 #include "cross_correlation.h"
 
 
-
 //calculul intensitatii medii
 double intensitate_medie(imagine a, int x, int y, int h, int w)
 {
@@ -61,7 +60,6 @@ double calculare_scor(imagine f, imagine sablon, int x, int y)
         for(j = 0; j < sablon.latime; ++j)
         {
             s += d_raport * ( f.p[(i+x)*f.latime + (j+y)].r - fereastra_medie) * ( sablon.p[i*sablon.latime + j].r - sablon_medie );
-            //printf("f: %d %d %d   s: %d %d %d\n", f.p[(i+x)*f.latime + (j+y)].r, f.p[(i+x)*f.latime + (j+y)].g, f.p[(i+x)*f.latime + (j+y)].b, sablon.p[i*sablon.latime + j].r, sablon.p[i*sablon.latime + j].g, sablon.p[i*sablon.latime + j].b);
         }
     }
     double rez = n_raport * s;
@@ -77,12 +75,16 @@ vect_detectii* template_matching(imagine a, imagine sab, float ps, pixel cul)
     v->d = (detectie*) malloc(0);
     v->lng = 0;
 
+
+    float bautura = 0;
+
     //intensitati
     int i, j;
     for(i = 0; i < a.inaltime - sab.inaltime + 1; ++i)
     {
         for(j = 0; j < a.latime - sab.latime + 1; ++j)
         {
+            bautura = (i * j) / (float)(a.inaltime * a.latime);
             double scor = calculare_scor(a, sab, i, j);
             if( scor >= ps)
             {
@@ -96,7 +98,21 @@ vect_detectii* template_matching(imagine a, imagine sab, float ps, pixel cul)
                 v->d[v->lng-1].c = cul;
             }
         }
+
+        printf("loading: ");
+        if(i % 100 < 50)
+            printf("0101");
+        else
+            printf("1010");
+        for(int k = 0; k < 80*bautura; ++k)
+            {
+                printf("=");
+            }
+            printf("\r");
+
     }
+    printf("\n");
+
 
     return v;
 }

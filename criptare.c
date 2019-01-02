@@ -57,9 +57,12 @@ unsigned int* generare_sir_nr_pseudo_aleatoare(unsigned int seed, int n)
 void permutare(int n, int *v, unsigned int *r)
 {
     unsigned int i, j;
-    for(i = 1; i < n; ++i)
+    for(i = 0; i < n; ++i)
+        v[i] = i;
+
+    for(i = n-1; i >= 1; --i)
     {
-        j = r[i] % i;
+        j = r[n-i+1] % (i+1);
         int aux = v[i];
         v[i] = v[j];
         v[j] = aux;
@@ -72,8 +75,6 @@ void permutare_imagine(imagine *a, unsigned int * r)
     int n = a->latime * a->inaltime;
     int i;
     int *v = (int*)malloc(sizeof(int)*n);
-    for(i = 0; i < n; ++i)
-        v[i] = i;
 
     //permutarea cu ajutorul sirului pseudo-aleator
     permutare(n, v, r);
@@ -87,6 +88,7 @@ void permutare_imagine(imagine *a, unsigned int * r)
 
     free(a->p);
     a->p = rez;
+    free(v);
 }
 
 //functia primeste o imagine cu pixelii permutati si aplica asupra fiecarui pixel criptarea cu xor
@@ -126,7 +128,7 @@ imagine* liniarizare(char* nume_fisier)
     fread(&a->latime, sizeof(int), 1, f);
     fseek(f, 22, SEEK_SET);
     fread(&a->inaltime, sizeof(int), 1, f);
-    printf("--latime img de liniarizat: %d\n--inaltime img de liniarizat: %d\n", a->latime, a->inaltime);
+    //printf("--latime img de liniarizat: %d\n--inaltime img de liniarizat: %d\n", a->latime, a->inaltime);
 
     //se calculeaza padding-ul
     int padding;
@@ -153,7 +155,7 @@ imagine* liniarizare(char* nume_fisier)
             fread(&t, 1, 1, f);
     }
     int lungime = ftell(f);
-    printf("\nlungime img de liniarizat: %d\n", lungime);
+    //printf("\nlungime img de liniarizat: %d\n", lungime);
 
     fclose(f);
     return a;
@@ -205,7 +207,7 @@ void rescrie(char* fisier_init, char* fisier_fin, imagine *a)
     }
 
     int lungime = ftell(fout);
-    printf("\n lungime:%d\n", lungime);
+    //printf("\n lungime:%d\n", lungime);
 
     fclose(fin);
     fclose(fout);
@@ -243,8 +245,6 @@ void criptare(char *imagine_init, char *imagine_fin, char *cheie)
 
     //rescriere a imaginii
     rescrie(imagine_init, imagine_fin, a);
-
-    test_chi_patrat(imagine_fin, a);
 
     free(a->p);
     free(a);

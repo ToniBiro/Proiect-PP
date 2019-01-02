@@ -6,12 +6,10 @@ void grayscale_image(char* nume_fisier_sursa,char* nume_fisier_destinatie)
    unsigned int dim_img, latime_img, inaltime_img;
    unsigned char pRGB[3], aux;
 
-   printf("nume_fisier_sursa = %s \n",nume_fisier_sursa);
-
    fin = fopen(nume_fisier_sursa, "rb");
    if(fin == NULL)
    	{
-   		printf("nu am gasit imaginea sursa din care citesc");
+   		printf("Eroare deschidere imagine sursa grayscale!");
    		return;
    	}
 
@@ -19,13 +17,11 @@ void grayscale_image(char* nume_fisier_sursa,char* nume_fisier_destinatie)
 
    fseek(fin, 2, SEEK_SET);
    fread(&dim_img, sizeof(unsigned int), 1, fin);
-   printf("Dimensiunea imaginii in octeti: %u\n", dim_img);
 
    fseek(fin, 18, SEEK_SET);
    fread(&latime_img, sizeof(unsigned int), 1, fin);
    fseek(fin, 22, SEEK_SET);
    fread(&inaltime_img, sizeof(unsigned int), 1, fin);
-   printf("Dimensiunea imaginii in pixeli (latime x inaltime): %u x %u\n",latime_img, inaltime_img);
 
    //copiaza octet cu octet imaginea initiala in cea noua
 	fseek(fin,0,SEEK_SET);
@@ -43,8 +39,6 @@ void grayscale_image(char* nume_fisier_sursa,char* nume_fisier_destinatie)
         padding = 4 - (3 * latime_img) % 4;
     else
         padding = 0;
-
-    printf("padding = %d \n",padding);
 
 	fseek(fout, 54, SEEK_SET);
 	int i,j;

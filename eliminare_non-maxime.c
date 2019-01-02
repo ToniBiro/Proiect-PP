@@ -27,12 +27,10 @@ int arie(detectie a, detectie b)
 void elimin_non_maxime(vect_detectii *f)
 {
     int i, j;
-    //vect_detectii *f = *fer;
     int arie_d = f->d[0].w * f->d[0].h;
 
     for(i = 0; i < f->lng-1; ++i)
     {
-        int h = 0;
         for(j = i+1; j < f->lng; ++j)
         {
             int arie_intersectie = arie(f->d[i], f->d[j]);
@@ -42,9 +40,7 @@ void elimin_non_maxime(vect_detectii *f)
             float suprap = (float)arie_intersectie / (arie_d + arie_d - arie_intersectie);
 
             if(suprap > 0.2)
-                f->d[j].scor = -1;
-            else
-                h = 1;
+                f->d[j].scor = -2;
         }
     }
 }

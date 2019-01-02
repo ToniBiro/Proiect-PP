@@ -9,14 +9,12 @@ void permutare_inversa(imagine *a, unsigned int *r)
     //creez permutarea in functie de sirul generat
     int *v = (int*) malloc(sizeof(int) * n);
     int i;
-    for(i = 0; i < n; ++i)
-        v[i] = i;
 
     permutare(n, v, r);
 
     //permut invers imaginea
-    pixel *rez = (pixel*) malloc(sizeof(pixel) * a->latime * a->inaltime);
-    for(i = 0; i < a->latime * a->inaltime; ++i)
+    pixel *rez = (pixel*) malloc(sizeof(pixel) * n);
+    for(i = 0; i < n; ++i)
         rez[i] = a->p[v[i]];
 
     free(a->p);

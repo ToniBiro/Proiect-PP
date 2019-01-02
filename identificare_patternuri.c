@@ -11,12 +11,11 @@ int identificare_patternuri(char *fisier_cu_date)
         return 0;
     }
 
-    char img_init[30];
+    char img_init[1024];
     fscanf(f_date, "%s", img_init);
 
+     //grayscale
     char img_gray[] = "img_gray.bmp";
-
-    //grayscale
     grayscale_image(img_init, img_gray);
 
     //liniarizez imaginea
@@ -44,13 +43,11 @@ int identificare_patternuri(char *fisier_cu_date)
     vect_detectii *f;
     while(1)
     {
-        char sablon[30];
+        char sablon[1024];
         fscanf(f_date, "%s", sablon);
-        printf("sablon nume:%s\n", sablon);
 
         //aleg culoarea
         pixel *cul = aleg_culoare(sablon);
-        printf("r:%d g:%d b:%d\n", cul->r, cul->g, cul->b);
 
         FILE *f_sab = fopen(sablon, "rb");
         if(f_sab == NULL)
@@ -70,7 +67,6 @@ int identificare_patternuri(char *fisier_cu_date)
 
         //liniarizare sabloane
         imagine *sab = liniarizare(sablon);
-        printf("sablon dupa liniarizare");
 
         //detectie sablonul sab
         f = template_matching(*gray, *sab, 0.5, *cul);
@@ -86,6 +82,11 @@ int identificare_patternuri(char *fisier_cu_date)
         if(feof(f_date))
             break;
 
+        //eliberez memoria alocata dinamic pentru imaginea sab si vectorul intermediar de detectii
+        free(sab->p);
+        free(sab);
+        free(f->d);
+        free(f);
     }
 
     //sortarea descrescatoare dupa scor a detectiilor din vectorul final fin
@@ -100,6 +101,14 @@ int identificare_patternuri(char *fisier_cu_date)
     char imagine_colorata[] = "img_colorata.bmp";
 
     rescrie(img_init, imagine_colorata, icolor);
+
+    //eliberez memoria alocata dinamic
+    free(icolor->p);
+    free(icolor);
+    free(gray->p);
+    free(gray);
+    free(fin->d);
+    free(fin);
 
     return 1;
 }

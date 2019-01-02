@@ -26,11 +26,11 @@ void frecvente_pe_canale(int **r, int **g, int **b, FILE *f, int latime, int ina
     }
 }
 
-float test_chi_patrat_pe_un_canal(FILE *f, int *canal, imagine *a)
+float test_chi_patrat_pe_un_canal(FILE *f, int *canal, int latime, int inaltime)
 {
-
     int i;
-    float rez = 0 , f_barat = (a->latime * a->inaltime) / 256;
+
+    float rez = 0 , f_barat = (latime * inaltime) / 256.0;
 
     for(i = 0; i < 256; ++i)
         rez += (float)( (canal[i] - f_barat)*(canal[i] - f_barat) ) / (float)f_barat;
@@ -38,15 +38,23 @@ float test_chi_patrat_pe_un_canal(FILE *f, int *canal, imagine *a)
     return rez;
 }
 
-void test_chi_patrat(char *fisier, imagine *a)
+void test_chi_patrat(char *fisier)
 {
     FILE * f = fopen(fisier, "rb");
 
+    int inaltime, latime;
+    fseek(f, 18, SEEK_SET);
+    fread(&latime, sizeof(int), 1, f);
+    fread(&inaltime, sizeof(int), 1, f);
+
     int *r, *g, *b;
-    frecvente_pe_canale(&r, &g, &b, f, a->latime, a->inaltime);
-    printf("testul pe canalul r: %.2f\n", test_chi_patrat_pe_un_canal(f, r, a));
-    printf("testul pe canalul g: %.2f\n", test_chi_patrat_pe_un_canal(f, g, a));
-    printf("testul pe canalul b: %.2f\n", test_chi_patrat_pe_un_canal(f, b, a));
+    frecvente_pe_canale(&r, &g, &b, f, latime, inaltime);
+    printf("testul pe canalul r: %.2f\n", test_chi_patrat_pe_un_canal(f, r, latime, inaltime));
+    printf("testul pe canalul g: %.2f\n", test_chi_patrat_pe_un_canal(f, g, latime, inaltime));
+    printf("testul pe canalul b: %.2f\n", test_chi_patrat_pe_un_canal(f, b, latime, inaltime));
+    free(r);
+    free(g);
+    free(b);
 
     fclose(f);
 }
