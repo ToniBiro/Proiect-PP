@@ -9,14 +9,6 @@
 
 int main()
 {
-    /// Testament  - Biro Balan Antonia - (multumiri lui Gabi si Wombat(radu))
-    ///te iubesc mult mult mult si calduros dragul meu ALEXE si Ghidoveanu, mersi radu (wombat), amm..te rog da un 10 pentru Ateneu :)
-    ///in cazul in care acest comentariu ramana aici, am fost beata cand l-am scris
-    ///totul e !false ,mersi gabi, pentru ca cand esti beat iese la iveala adevarul
-    ///in vino veritas, mersi gabi
-    ///dragul meu Dragulici (Licurici) imi cer scuze pentru ca nu stiu sa inmultesc,dar stii bine
-    /// ca iubirea noastra nu poate fi oprita de un mic detaliu ca acesta
-    ///ar trebui sa vezi cum inmultesc aia din clasa de stiinte sociale de la Miercurea Ciuc
     FILE *fisier_cript_date = fopen("criptare_date.txt", "r");
 
     if(fisier_cript_date == NULL)
