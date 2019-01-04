@@ -1,29 +1,53 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <math.h>
 #include "criptare.h"
-#include "greyscale.h"
+#include "decriptare.h"
 #include "test_chi_patrat.h"
+#include "identificare_patternuri.h"
 
 int main()
 {
-    char imagine[] = "peppers.bmp";
-    char imagine_permutata[] = "permutata.bmp";
+    FILE *fisier_cu_cai = fopen("fisier_cu_cai.txt", "r");
 
-    pixel *p = (pixel*)liniarizare(imagine);
-    p = (pixel*)criptare(p, imagine);
-    rescrie(imagine, imagine_permutata, p);
+    if(fisier_cu_cai == NULL)
+    {
+        printf("Eroare la deschiderea fisierului cu cai!\n");
+        return -1;
+    }
 
-    //testare de chi-patrat
+    char imagine_init[1024];
+    char imagine_fin[1024];
+    char cheie[1024];
 
-    FILE * f = fopen(imagine_permutata, "rb");
+    fscanf(fisier_cu_cai, "%1024s", imagine_init);
+    fscanf(fisier_cu_cai, "%1024s", imagine_fin);
+    fscanf(fisier_cu_cai, "%1024s", cheie);
 
-    int *r, *g, *b;
-    frecvente_pe_canale(&r, &g, &b, f);
-    printf("testul pe canalul r: %.2f\n", test_chi_patrat(f, r));
-    printf("testul pe canalul g: %.2f\n", test_chi_patrat(f, g));
-    printf("testul pe canalul b: %.2f\n", test_chi_patrat(f, b));
+    printf("test chi - patrat imagine necriptata:\n");
+    test_chi_patrat(imagine_init);
 
-    fclose(f);
+    //criptare
+    criptare(imagine_init, imagine_fin, cheie);
+
+    printf("test chi - patrat imagine criptata:\n");
+    test_chi_patrat(imagine_fin);
+
+    char img_de_decriptat[1024];
+    char cheie_decript[1024];
+
+    fscanf(fisier_cu_cai, "%1024s", img_de_decriptat);
+    fscanf(fisier_cu_cai, "%1024s", cheie_decript);
+
+    //decriptare
+    decriptare(img_de_decriptat, cheie_decript);
+
+    //template matching
+    identificare_patternuri(fisier_cu_cai);
+
+    fclose(fisier_cu_cai);
 
     return 0;
+
 }
