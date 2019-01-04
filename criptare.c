@@ -117,7 +117,7 @@ imagine* liniarizare(char* nume_fisier)
     if(f == NULL)
     {
         printf("Eroare deschidere");
-        return NULL;
+        exit(7);
     }
 
     imagine *a = (imagine*) malloc(sizeof(imagine));
@@ -218,6 +218,13 @@ void rescrie(char* fisier_init, char* fisier_fin, imagine *a)
 //in fisierul cheie returneaza seed-ul si sv-ul
 void criptare(char *imagine_init, char *imagine_fin, char *cheie)
 {
+    FILE *f = fopen(cheie, "r");
+
+    unsigned int seed, sv;
+    fscanf(f, "%u %u", &seed, &sv);
+
+    fclose(f);
+
     //liniarizare imagine
     if(strstr(imagine_init, ".bmp") == NULL)
     {
@@ -231,7 +238,7 @@ void criptare(char *imagine_init, char *imagine_fin, char *cheie)
     //se genereaza sir de nr psedo-aleatoare
 
     unsigned int * r;
-    unsigned int seed = 123456789;
+
     r = generare_sir_nr_pseudo_aleatoare(seed, a->latime * a->inaltime);
 
     //permut imaginea cu ajutorul primei jumatati a sirului pseudo-aleator
@@ -240,7 +247,7 @@ void criptare(char *imagine_init, char *imagine_fin, char *cheie)
 
     //criptez cu xor folosind a doua jumatate a sirului pseudo-aleator
 
-    int sv = 987654321;
+
     criptare_cu_XOR(a, r, sv);
 
     //rescriere a imaginii
@@ -249,10 +256,5 @@ void criptare(char *imagine_init, char *imagine_fin, char *cheie)
     free(a->p);
     free(a);
 
-    FILE *f = fopen(cheie, "w");
-
-    fprintf(f, "%u %u", seed, sv);
-
-    fclose(f);
 
 }

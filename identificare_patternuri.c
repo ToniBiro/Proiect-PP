@@ -1,18 +1,10 @@
 #include "identificare_patternuri.h"
 
 //functia calculeaza detectiile si coloreaza pentru fiecare sablon cu culoarea corespunzatoare
-int identificare_patternuri(char *fisier_cu_date)
+void identificare_patternuri(FILE *f_date)
 {
-    FILE *f_date = fopen(fisier_cu_date, "r");
-
-    if(f_date == NULL)
-    {
-        printf("eroare deschidere fisier cu numele imaginilor!");
-        return 0;
-    }
-
     char img_init[1024];
-    fscanf(f_date, "%s", img_init);
+    fscanf(f_date, "%1024s", img_init);
 
      //grayscale
     char img_gray[] = "img_gray.bmp";
@@ -41,10 +33,13 @@ int identificare_patternuri(char *fisier_cu_date)
     fin->d = (detectie*) malloc(0);
     fin->lng = 0;
     vect_detectii *f;
-    while(1)
+
+    int n;
+    fscanf(f_date, "%d", &n);
+    for(int u = 0; u < n; ++u)
     {
         char sablon[1024];
-        fscanf(f_date, "%s", sablon);
+        fscanf(f_date, "%1024s", sablon);
 
         //aleg culoarea
         pixel *cul = aleg_culoare(sablon);
@@ -53,8 +48,12 @@ int identificare_patternuri(char *fisier_cu_date)
         if(f_sab == NULL)
         {
             printf("eroare deschidere fisier sablon");
-            return 0;
+            exit(7);
         }
+        char buf[1024];
+        //grayscale sablon
+        sprintf(buf, "gray_%s", sablon);
+        grayscale_image(sablon, buf);
 
         //aflare lungime si latime sablon
         int inaltime_sab, latime_sab;
@@ -66,7 +65,7 @@ int identificare_patternuri(char *fisier_cu_date)
         fseek(f_sab, 0L, SEEK_SET);
 
         //liniarizare sabloane
-        imagine *sab = liniarizare(sablon);
+        imagine *sab = liniarizare(buf);
 
         //detectie sablonul sab
         f = template_matching(*gray, *sab, 0.5, *cul);
@@ -78,9 +77,6 @@ int identificare_patternuri(char *fisier_cu_date)
         fin->lng += f->lng;
 
         fclose(f_sab);
-
-        if(feof(f_date))
-            break;
 
         //eliberez memoria alocata dinamic pentru imaginea sab si vectorul intermediar de detectii
         free(sab->p);
@@ -109,6 +105,4 @@ int identificare_patternuri(char *fisier_cu_date)
     free(gray);
     free(fin->d);
     free(fin);
-
-    return 1;
 }

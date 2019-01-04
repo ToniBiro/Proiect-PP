@@ -9,11 +9,11 @@
 
 int main()
 {
-    FILE *fisier_cript_date = fopen("criptare_date.txt", "r");
+    FILE *fisier_cu_cai = fopen("fisier_cu_cai.txt", "r");
 
-    if(fisier_cript_date == NULL)
+    if(fisier_cu_cai == NULL)
     {
-        printf("Eroare deschiderre fisier criptare date!\n");
+        printf("Eroare la deschiderea fisierului cu cai!\n");
         return -1;
     }
 
@@ -21,11 +21,9 @@ int main()
     char imagine_fin[1024];
     char cheie[1024];
 
-    fscanf(fisier_cript_date, "%s", imagine_init);
-    fscanf(fisier_cript_date, "%s", imagine_fin);
-    fscanf(fisier_cript_date, "%s", cheie);
-
-    fclose(fisier_cript_date);
+    fscanf(fisier_cu_cai, "%1024s", imagine_init);
+    fscanf(fisier_cu_cai, "%1024s", imagine_fin);
+    fscanf(fisier_cu_cai, "%1024s", cheie);
 
     printf("test chi - patrat imagine necriptata:\n");
     test_chi_patrat(imagine_init);
@@ -36,34 +34,20 @@ int main()
     printf("test chi - patrat imagine criptata:\n");
     test_chi_patrat(imagine_fin);
 
-    //deschidere fisier pentru decriptare
-    FILE *fisier_decript_date = fopen("decriptare_date.txt", "r");
-
-    if(fisier_decript_date == NULL)
-    {
-        printf("Eroare deschiderrre fisier decriptare date!\n");
-        return -1;
-    }
-
     char img_de_decriptat[1024];
     char cheie_decript[1024];
 
-    fscanf(fisier_decript_date, "%s", img_de_decriptat);
-    fscanf(fisier_decript_date, "%s", cheie_decript);
-
-    fclose(fisier_decript_date);
+    fscanf(fisier_cu_cai, "%1024s", img_de_decriptat);
+    fscanf(fisier_cu_cai, "%1024s", cheie_decript);
 
     //decriptare
     decriptare(img_de_decriptat, cheie_decript);
 
     //template matching
-    char fisier_cu_date[] = "fisier_cu_date2.txt";
+    identificare_patternuri(fisier_cu_cai);
 
-    if(identificare_patternuri(fisier_cu_date) == 0)
-    {
-        printf("eroare deschidere fisier!");
-        return -1;
-    }
+    fclose(fisier_cu_cai);
+
     return 0;
 
 }

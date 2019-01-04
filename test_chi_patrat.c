@@ -41,6 +41,11 @@ float test_chi_patrat_pe_un_canal(FILE *f, int *canal, int latime, int inaltime)
 void test_chi_patrat(char *fisier)
 {
     FILE * f = fopen(fisier, "rb");
+    if(f == NULL)
+    {
+        printf("Eroare deschidere fisier %s!", fisier);
+        exit(7);
+    }
 
     int inaltime, latime;
     fseek(f, 18, SEEK_SET);

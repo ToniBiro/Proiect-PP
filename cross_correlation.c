@@ -76,7 +76,7 @@ vect_detectii* template_matching(imagine a, imagine sab, float ps, pixel cul)
     v->lng = 0;
 
 
-    float bautura = 0;
+    float bau = 0;
 
     //intensitati
     int i, j;
@@ -84,7 +84,7 @@ vect_detectii* template_matching(imagine a, imagine sab, float ps, pixel cul)
     {
         for(j = 0; j < a.latime - sab.latime + 1; ++j)
         {
-            bautura = (i * j) / (float)(a.inaltime * a.latime);
+            bau = (i * j) / (float)(a.inaltime * a.latime);
             double scor = calculare_scor(a, sab, i, j);
             if( scor >= ps)
             {
@@ -104,9 +104,11 @@ vect_detectii* template_matching(imagine a, imagine sab, float ps, pixel cul)
             printf("0101");
         else
             printf("1010");
-        for(int k = 0; k < 80*bautura; ++k)
+
+        int k;
+        for(k = 0; k < 20*bau; ++k)
             {
-                printf("=");
+                printf("+");
             }
             printf("\r");
 
@@ -115,4 +117,5 @@ vect_detectii* template_matching(imagine a, imagine sab, float ps, pixel cul)
 
 
     return v;
+
 }
